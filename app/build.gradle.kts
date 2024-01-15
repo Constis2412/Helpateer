@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "at.spengergasse.helpateer"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "at.spengergasse.helpateer"
