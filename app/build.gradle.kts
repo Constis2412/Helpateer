@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "at.spengergasse.helpateer"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "at.spengergasse.helpateer"
@@ -15,6 +15,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
     }
 
     buildTypes {
@@ -32,6 +33,9 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+    buildFeatures{
+        viewBinding = true
     }
 }
 
