@@ -1,16 +1,23 @@
-package at.spengergasse.helpateer
+package at.spengergasse.helpateer.view
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Patterns
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
-
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import at.spengergasse.helpateer.R
 import at.spengergasse.helpateer.databinding.ActivityRegisterBinding
+import at.spengergasse.helpateer.repository.AuthRepository
+import at.spengergasse.helpateer.utility.APIService
+import at.spengergasse.helpateer.view_model.RegisterActivityViewModel
+import at.spengergasse.helpateer.view_model.RegisterActivityViewModelFactory
 
-class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListener, View.OnFocusChangeListener {
-    lateinit var mBinding: ActivityRegisterBinding
+class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListener,
+    View.OnFocusChangeListener {
+    private lateinit var mBinding: ActivityRegisterBinding
+    private lateinit var mViewModel: RegisterActivityViewModel
 
     //lateinit var usernameInput: EditText
     //lateinit var passwordInput: EditText
@@ -23,6 +30,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListen
         mBinding.emailE.onFocusChangeListener = this
         mBinding.passwordE.onFocusChangeListener = this
         mBinding.cpasswordE.onFocusChangeListener = this
+        mViewModel = ViewModelProvider(this, RegisterActivityViewModelFactory(AuthRepository(APIService.getService()), application))
+            .get(RegisterActivityViewModel::class.java)
+        setupObservers()
         /*
         usernameInput = findViewById(R.id.username_input)
         passwordInput = findViewById(R.id.password_input)
@@ -35,9 +45,23 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListen
         }*/
     }
 
+    private fun setupObservers(){
+        mViewModel.getIsLoaded().observe(this){
+
+        }
+
+        mViewModel.getErrorMessage().observe(this){
+
+        }
+
+        mViewModel.getUser().observe(this){
+
+        }
+    }
+
     private fun validateFullName(): Boolean {
         var eMessage: String? = null
-        val value: String = mBinding.fullnameE.toString()
+        val value: String = mBinding.fullnameE.text.toString()
         if (value.isEmpty()) {
             eMessage = "Full Name is required"
         }
@@ -106,12 +130,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListen
         return eMessage == null
     }
 
-    private fun validatePasswordAndCondirmPassword(): Boolean{
+    private fun validatePasswordAndCondirmPassword(): Boolean {
         var eMessage: String? = null
         val password = mBinding.passwordE.text.toString()
         val confirmPassword = mBinding.cpasswordE.text.toString()
 
-        if(password != confirmPassword){
+        if (password != confirmPassword) {
             eMessage = "Confirm Password doesnt match Password"
         }
 
@@ -127,6 +151,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListen
     override fun onClick(view: View?) {
 
     }
+
     override fun onFocusChange(view: View?, hasFocus: Boolean) {
         if (view != null) {
             when (view.id) {
@@ -146,7 +171,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListen
                             mBinding.emailL.isErrorEnabled = false
                         }
                     } else {
-                        validateEmail()
+                        if (validateEmail()) {
+                            //do validation for its uniqueness
+                        }
                     }
                 }
 
@@ -156,7 +183,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListen
                             mBinding.passwordL.isErrorEnabled = false
                         }
                     } else {
-                        validatePassword()
+                        if (validatePassword() && mBinding.cpasswordE.text!!.isNotEmpty() &&
+                            validateComfirmPassword() && validatePasswordAndCondirmPassword()
+                        ) {
+                            if (mBinding.cpasswordL.isErrorEnabled) {
+                                mBinding.cpasswordL.isErrorEnabled = false
+
+                            }
+                            mBinding.cpasswordL.apply {
+                                setStartIconDrawable(R.drawable.check_circle)
+                            }
+                        }
                     }
                 }
 
@@ -166,18 +203,27 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListen
                             mBinding.cpasswordL.isErrorEnabled = false
                         }
                     } else {
-                        validateComfirmPassword()
+                        if (validateComfirmPassword() && validatePassword() &&
+                            validatePasswordAndCondirmPassword()
+                        ) {
+                            if (mBinding.passwordL.isErrorEnabled) {
+                                mBinding.passwordL.isErrorEnabled = false
+
+                            }
+                            mBinding.cpasswordL.apply {
+                                setStartIconDrawable(R.drawable.check_circle)
+                            }
+                        }
                     }
                 }
             }
+
         }
-
-    }
-    override fun onKey(view: View?, event: Int, keyEvent: KeyEvent?): Boolean {
-       return false
     }
 
-
+    override fun onKey(v: View?, keyCode: Int, event: KeyEvent?): Boolean {
+        TODO("Not yet implemented")
+    }
 }
 
 
