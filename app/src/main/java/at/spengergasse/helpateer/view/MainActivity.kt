@@ -5,7 +5,9 @@ import android.util.Patterns
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import at.spengergasse.helpateer.R
 import at.spengergasse.helpateer.databinding.ActivityRegisterBinding
@@ -30,9 +32,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListen
         mBinding.emailE.onFocusChangeListener = this
         mBinding.passwordE.onFocusChangeListener = this
         mBinding.cpasswordE.onFocusChangeListener = this
-        mViewModel = ViewModelProvider(this, RegisterActivityViewModelFactory(AuthRepository(APIService.getService()), application))
-            .get(RegisterActivityViewModel::class.java)
-        setupObservers()
+        //mViewModel = ViewModelProvider(this, RegisterActivityViewModelFactory(AuthRepository(APIService.getService()), application))
+            //.get(RegisterActivityViewModel::class.java)
+        //setupObservers()
+
         /*
         usernameInput = findViewById(R.id.username_input)
         passwordInput = findViewById(R.id.password_input)
@@ -45,19 +48,76 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListen
         }*/
     }
 
-    private fun setupObservers(){
-        mViewModel.getIsLoaded().observe(this){
+    /*
+        private fun setupObservers(){
+            mViewModel.getIsLoaded().observe(this){
+                    mBinding.progressBar.isVisible = it
 
+            }
+
+            mViewModel.getIsUnique().observe(this){
+                if(validateEmail(shouldUpdate = false)){
+                    if(it){
+                        mBinding.emailL.apply{
+                            if(isErrorEnabled)isErrorEnabled = false
+                            setStartIconDrawable(R.drawable.check_circle)
+                        }
+                    }else{
+                        mBinding.emailL.apply{
+                            if(startIconDrawable != null) startIconDrawable = null
+                            isErrorEnabled = true
+                            error = "Email is already taken"
+                        }
+                    }
+                }
+            }
+
+            mViewModel.getErrorMessage().observe(this){
+                val formErrorKeys = arrayOf("fullName", "email", "password")
+                val message = StringBuilder()
+                it.map{entry ->
+                    if(formErrorKeys.contains(entry.key)){
+                        when(entry.key){
+                            "fullName" -> {
+                                mBinding.fullnameL.apply{
+                                    isErrorEnabled = true
+                                    error = entry.value
+                                }
+                            }
+                            "email" -> {
+                                mBinding.emailL.apply {
+                                    isErrorEnabled = true
+                                    error = entry.value
+                                }
+                            }
+                            "password" -> {
+                                mBinding.passwordL.apply {
+                                    isErrorEnabled = true
+                                    error = entry.value
+                                }
+                            }
+                        }
+                    }else{
+                        message.append(entry.value).append("\n")
+                    }
+
+                    if(message.isNotEmpty()){
+                        AlertDialog.Builder(this)
+                            .setIcon(R.drawable.info)
+                            .setTitle("Information")
+                            .setMessage(message)
+                            .setPositiveButton("OK"){dialog, _ -> dialog!!.dismiss()}
+                            .show()
+                    }
+                }
+            }
+
+            mViewModel.getUser().observe(this){
+
+            }
         }
 
-        mViewModel.getErrorMessage().observe(this){
-
-        }
-
-        mViewModel.getUser().observe(this){
-
-        }
-    }
+     */
 
     private fun validateFullName(): Boolean {
         var eMessage: String? = null
@@ -76,7 +136,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListen
 
     }
 
-    private fun validateEmail(): Boolean {
+    private fun validateEmail(): Boolean { //shouldUpdate: Boolean = true
         var eMessage: String? = null
         val value: String = mBinding.emailE.text.toString()
         if (value.isEmpty()) {
@@ -85,12 +145,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListen
             eMessage = "Email is invalid"
         }
 
-        if (eMessage != null) {
+        if (eMessage != null ) {//&& shouldUpdate
             mBinding.emailL.apply {
                 isErrorEnabled = true
                 error = eMessage
             }
         }
+
+
         return eMessage == null
     }
 
@@ -170,11 +232,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnKeyListen
                         if (mBinding.emailL.isErrorEnabled) {
                             mBinding.emailL.isErrorEnabled = false
                         }
-                    } else {
-                        if (validateEmail()) {
-                            //do validation for its uniqueness
-                        }
+                    }else{
+                        validateEmail()
                     }
+
                 }
 
                 R.id.password_e -> {
